@@ -2,16 +2,19 @@ import { Input, Label } from '@elance/ui'
 
 import type { TextFieldSpec } from '@elance/contracts'
 import type { ReactElement } from 'react'
-import type { ProfileFormApi } from './use-profile-form'
+import type { FieldPath, FieldValues, UseFormReturn } from 'react-hook-form'
 
-export function ProfileTextField({
+export function TextField<TFieldValues extends FieldValues>({
 	spec,
 	form,
 }: {
-	spec: TextFieldSpec
-	form: ProfileFormApi
+	spec: Omit<TextFieldSpec, 'id'> & { id: FieldPath<TFieldValues> }
+	form: Pick<
+		UseFormReturn<TFieldValues>,
+		'register' | 'getFieldState' | 'formState'
+	>
 }): ReactElement {
-	const error = form.formState.errors[spec.id]?.message
+	const error = form.getFieldState(spec.id, form.formState).error?.message
 	return (
 		<div className="space-y-2">
 			<Label htmlFor={spec.id}>
