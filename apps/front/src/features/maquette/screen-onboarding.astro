@@ -1,0 +1,84 @@
+---
+import {
+  ACTIVITY_LEVEL_OPTIONS,
+  SEX_OPTIONS,
+  TEXT_FIELDS,
+} from '@elance/contracts'
+import { Button, Input, Label } from '@elance/ui'
+
+import Wordmark from '../../components/brand/Wordmark.astro'
+
+import MockupRadioRow from './MockupRadioRow.astro'
+
+const FIELD_VALUES: Record<string, string> = {
+  height: '170',
+  weight: '70',
+  age: '30',
+}
+---
+
+<div class="flex min-h-full flex-col">
+	<Wordmark href="#" />
+	<div class="mt-5">
+		<h1 class="text-[1.7rem] leading-[1.02] font-medium tracking-[-0.04em]">
+			Parle-nous de toi.
+		</h1>
+		<p class="text-muted-foreground mt-2 text-sm">
+			Pour calculer ta cible calorique et tes macros.
+		</p>
+	</div>
+	<div class="mt-5 space-y-4">
+		<div class="grid grid-cols-3 gap-2">
+			{
+				TEXT_FIELDS.map(spec => (
+					<div class="space-y-1.5">
+						<Label htmlFor={`mockup-${spec.id}`} className="text-[13px]">
+							{spec.label}
+							<span class="text-muted-foreground font-normal">
+								{' '}
+								{spec.unit}
+							</span>
+						</Label>
+						<Input
+							id={`mockup-${spec.id}`}
+							type="number"
+							min={spec.min}
+							max={spec.max}
+							defaultValue={FIELD_VALUES[spec.id]}
+							className="px-3"
+						/>
+					</div>
+				))
+			}
+		</div>
+		<div class="space-y-2">
+			<span class="block text-sm font-medium">Sexe</span>
+			<div class="grid grid-cols-2 gap-2">
+				{
+					SEX_OPTIONS.map(option => (
+						<MockupRadioRow
+							label={option.label}
+							checked={option.value === 'female'}
+						/>
+					))
+				}
+			</div>
+		</div>
+		<div class="space-y-2">
+			<span class="block text-sm font-medium">Niveau d'activité</span>
+			<div class="grid gap-2">
+				{
+					ACTIVITY_LEVEL_OPTIONS.map(option => (
+						<MockupRadioRow
+							label={option.label}
+							hint={option.hint}
+							checked={option.value === 'moderate'}
+							compact
+						/>
+					))
+				}
+			</div>
+		</div>
+		<Button size="lg" className="w-full">Continuer</Button>
+	</div>
+</div>

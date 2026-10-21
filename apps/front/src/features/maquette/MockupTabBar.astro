@@ -1,0 +1,39 @@
+---
+import { Scale, Settings, Sun } from 'lucide-react'
+
+import type { MockupTabKey } from './mockup-data'
+
+const ITEMS = [
+  { key: 'today', label: "Aujourd'hui", icon: Sun },
+  { key: 'weight', label: 'Poids', icon: Scale },
+  { key: 'settings', label: 'Réglages', icon: Settings },
+] as const
+
+interface Props {
+  current: MockupTabKey
+}
+
+const { current } = Astro.props
+---
+
+<nav aria-label="Navigation">
+	<ul class="grid grid-cols-3 px-3 pt-1.5 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+		{
+			ITEMS.map(item => {
+				const Icon = item.icon
+				return (
+					<li>
+						<a
+							href="#"
+							aria-current={item.key === current ? 'page' : undefined}
+							class="flex flex-col items-center gap-1 rounded-xl py-1.5 text-[11.5px] font-medium text-muted-foreground transition-colors aria-[current=page]:text-foreground"
+						>
+							<Icon className="size-[22px]" strokeWidth={1.8} />
+							{item.label}
+						</a>
+					</li>
+				)
+			})
+		}
+	</ul>
+</nav>

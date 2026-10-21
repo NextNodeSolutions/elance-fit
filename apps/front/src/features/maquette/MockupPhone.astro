@@ -1,0 +1,34 @@
+---
+import MockupTabBar from './MockupTabBar.astro'
+
+import type { MockupTabKey } from './mockup-data'
+
+interface Props {
+  /** Active tab; omit to hide the tab bar (onboarding screen). */
+  current?: MockupTabKey
+}
+
+const { current } = Astro.props
+---
+
+<div
+	class="relative aspect-[340/690] w-full overflow-hidden rounded-[54px] border-[11px] border-foreground bg-background shadow-[0_40px_80px_-40px_rgba(11,14,12,0.45)]"
+>
+	<span
+		class="absolute top-2.5 left-1/2 z-20 h-[30px] w-[104px] -translate-x-1/2 rounded-full bg-foreground"
+	></span>
+	<div class="absolute inset-0 flex flex-col">
+		<div
+			class="min-h-0 flex-1 overflow-y-auto px-3.5 pt-14 pb-3 [scrollbar-width:thin] [scrollbar-color:var(--secondary)_transparent]"
+		>
+			<slot />
+		</div>
+		{
+			current ? (
+				<div class="shrink-0 border-t border-border bg-background/90 backdrop-blur-lg">
+					<MockupTabBar current={current} />
+				</div>
+			) : null
+		}
+	</div>
+</div>

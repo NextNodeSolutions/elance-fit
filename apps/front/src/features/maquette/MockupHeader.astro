@@ -1,0 +1,21 @@
+---
+import Wordmark from '../../components/brand/Wordmark.astro'
+
+import { MOCKUP_PROFILE } from './mockup-data'
+
+interface Props {
+  initial?: string
+}
+
+const { initial = MOCKUP_PROFILE.initial } = Astro.props
+---
+
+<header class="flex h-12 items-center justify-between gap-4">
+	<Wordmark href="#" />
+	<span
+		class="grid size-9 place-items-center rounded-full bg-card text-[13px] font-semibold"
+		aria-label="Mon compte"
+	>
+		{initial}
+	</span>
+</header>
