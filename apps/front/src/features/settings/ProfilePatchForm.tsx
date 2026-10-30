@@ -1,9 +1,15 @@
 import { RADIO_FIELDS, TEXT_FIELDS } from '@elance/contracts'
-import { Alert, Card, CardDescription, CardTitle } from '@elance/ui'
+import {
+	Alert,
+	Card,
+	CardDescription,
+	CardTitle,
+	SubmitButton,
+} from '@elance/ui'
 
-import { ProfileRadioField } from './profile-radio-field'
-import { ProfileSaveButton } from './profile-save-button'
-import { ProfileTextField } from './profile-text-field'
+import { RadioField } from '../../components/form/radio-field'
+import { TextField } from '../../components/form/text-field'
+
 import { useProfileForm } from './use-profile-form'
 
 import type { SettingsProfile } from '@elance/contracts'
@@ -34,21 +40,24 @@ export function ProfilePatchForm({
 				) : null}
 				<div className="grid gap-5 sm:grid-cols-3 sm:gap-3">
 					{TEXT_FIELDS.map(spec => (
-						<ProfileTextField
-							key={spec.id}
-							spec={spec}
-							form={form}
-						/>
+						<TextField key={spec.id} spec={spec} form={form} />
 					))}
 				</div>
 				{RADIO_FIELDS.map(spec => (
-					<ProfileRadioField
+					<RadioField
 						key={spec.name}
 						spec={spec}
 						form={form}
+						surface="card"
 					/>
 				))}
-				<ProfileSaveButton submitting={form.formState.isSubmitting} />
+				<SubmitButton
+					pending={form.formState.isSubmitting}
+					pendingLabel="Enregistrement…"
+					className="w-full sm:w-auto"
+				>
+					Enregistrer
+				</SubmitButton>
 			</form>
 		</Card>
 	)
