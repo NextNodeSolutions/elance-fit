@@ -3,9 +3,7 @@ import { Hono } from 'hono'
 
 import { handleAppError } from './handle-app-error'
 
-// Sentry must be the first middleware: it captures unhandled errors from Hono's
-// onError chain (4xx responses are excluded) and builds a trace per request.
-// The DSN comes from the SENTRY_DSN secret - without it the SDK stays disabled.
+// Sentry must run first to capture unhandled errors from the onError chain.
 export function createHttpApp(): Hono<{ Bindings: Env }> {
 	const app = new Hono<{ Bindings: Env }>()
 	app.use(

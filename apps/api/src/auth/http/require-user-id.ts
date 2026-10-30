@@ -9,15 +9,16 @@ export type AuthenticatedEnv = {
 	Variables: { userId: string }
 }
 
-// Exposes the session user as `res.get('userId')`, or throws UnauthorizedError
-// for app.onError to render as 401.
 export function requireUserId(
 	getUserId: GetUserId,
 ): MiddlewareHandler<AuthenticatedEnv> {
 	return createMiddleware<AuthenticatedEnv>(async (res, next) => {
 		const userId = await getUserId(res.env, res.req.raw.headers)
-		if (!userId) throw new UnauthorizedError()
+		if (!userId) {
+			const error = new UnauthorizedError()
+			return res.json(error.toJSON(), error.status)
+		}
 		res.set('userId', userId)
-		await next()
+		return next()
 	})
 }

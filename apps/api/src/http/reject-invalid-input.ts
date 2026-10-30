@@ -6,7 +6,6 @@ type ParseResult =
 	| { success: true }
 	| { success: false; error: readonly { message: string }[] }
 
-// Validator hook: answers a failed parse with 400 and every issue message.
 export function rejectInvalidInput(
 	parseResult: ParseResult,
 	res: Context,
