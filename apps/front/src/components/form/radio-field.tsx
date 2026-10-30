@@ -1,5 +1,6 @@
 import { RadioCard, RadioGroup } from '@elance/ui'
-import { Controller } from 'react-hook-form'
+
+import { useRadioField } from './use-radio-field'
 
 import type { RadioFieldSpec } from '@elance/contracts'
 import type { ComponentProps, ReactElement } from 'react'
@@ -20,41 +21,41 @@ export function RadioField<TFieldValues extends FieldValues>({
 	form: Pick<UseFormReturn<TFieldValues>, 'control'>
 	surface: ComponentProps<typeof RadioCard>['surface']
 }): ReactElement {
-	const labelId = `${spec.name}-label`
+	const { field, fieldState, labelId, errorId } = useRadioField({
+		name: spec.name,
+		control: form.control,
+	})
 	return (
-		<Controller
-			name={spec.name}
-			control={form.control}
-			render={({ field, fieldState }) => (
-				<div className="space-y-3">
-					<span id={labelId} className="block text-sm font-medium">
-						{spec.label}
-					</span>
-					<RadioGroup
-						aria-labelledby={labelId}
-						name={field.name}
-						value={field.value}
-						onValueChange={field.onChange}
-						aria-invalid={!!fieldState.error}
+		<div className="space-y-3">
+			<span id={labelId} className="block text-sm font-medium">
+				{spec.label}
+			</span>
+			<RadioGroup
+				aria-labelledby={labelId}
+				name={field.name}
+				value={field.value}
+				onValueChange={field.onChange}
+				onBlur={field.onBlur}
+				aria-describedby={fieldState.error ? errorId : undefined}
+				aria-invalid={!!fieldState.error}
+			>
+				{spec.options.map((option, index) => (
+					<RadioCard
+						key={option.value}
+						value={option.value}
+						ref={index === 0 ? field.ref : undefined}
+						hint={option.hint}
+						surface={surface}
 					>
-						{spec.options.map(option => (
-							<RadioCard
-								key={option.value}
-								value={option.value}
-								hint={option.hint}
-								surface={surface}
-							>
-								{option.label}
-							</RadioCard>
-						))}
-					</RadioGroup>
-					{fieldState.error?.message ? (
-						<p className="text-destructive text-sm">
-							{fieldState.error.message}
-						</p>
-					) : null}
-				</div>
-			)}
-		/>
+						{option.label}
+					</RadioCard>
+				))}
+			</RadioGroup>
+			{fieldState.error?.message ? (
+				<p id={errorId} className="text-destructive text-sm">
+					{fieldState.error.message}
+				</p>
+			) : null}
+		</div>
 	)
 }

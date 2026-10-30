@@ -1,3 +1,5 @@
+import { useId } from 'react'
+
 import { Input, Label } from '@elance/ui'
 
 import type { TextFieldSpec } from '@elance/contracts'
@@ -14,23 +16,30 @@ export function TextField<TFieldValues extends FieldValues>({
 		'register' | 'getFieldState' | 'formState'
 	>
 }): ReactElement {
+	const inputId = useId()
+	const errorId = `${inputId}-error`
 	const error = form.getFieldState(spec.id, form.formState).error?.message
 	return (
 		<div className="space-y-2">
-			<Label htmlFor={spec.id}>
+			<Label htmlFor={inputId}>
 				{spec.label} ({spec.unit})
 			</Label>
 			<Input
-				id={spec.id}
+				id={inputId}
 				type="number"
 				min={spec.min}
 				max={spec.max}
 				step={spec.step}
 				placeholder={spec.placeholder}
 				aria-invalid={!!error}
+				aria-describedby={error ? errorId : undefined}
 				{...form.register(spec.id)}
 			/>
-			{error ? <p className="text-destructive text-sm">{error}</p> : null}
+			{error ? (
+				<p id={errorId} className="text-destructive text-sm">
+					{error}
+				</p>
+			) : null}
 		</div>
 	)
 }
