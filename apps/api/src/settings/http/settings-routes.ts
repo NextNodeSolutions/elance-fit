@@ -1,19 +1,11 @@
 import {
-	HTTP_BAD_REQUEST,
 	HTTP_NOT_FOUND,
 	HTTP_OK,
-	HTTP_UNAUTHORIZED,
 	SETTINGS_PROFILE_NOT_FOUND_MESSAGE,
-	SettingsAccountDeletedResponseSchema,
 	SettingsProfileBodySchema,
-	SettingsProfileNotFoundResponseSchema,
-	SettingsProfileResponseSchema,
-	SettingsTokenResponseSchema,
-	UnauthorizedResponseSchema,
-	ValidationErrorResponseSchema,
 } from '@elance/contracts'
 import { Hono } from 'hono'
-import { describeRoute, resolver, validator } from 'hono-openapi'
+import { validator } from 'hono-openapi'
 
 import { requireUserId } from '../../auth/http/require-user-id'
 import { rejectInvalidInput } from '../../http/reject-invalid-input'
@@ -21,6 +13,13 @@ import { deleteAccount } from '../application/delete-account'
 import { getApiToken } from '../application/get-api-token'
 import { getSettingsProfile } from '../application/get-settings-profile'
 import { updateSettingsProfile } from '../application/update-settings-profile'
+
+import {
+	describeSettingsTokenRoute,
+	describeGetProfileRoute,
+	describeUpdateProfileRoute,
+	describeDeleteAccountRoute,
+} from './settings-route-descriptions'
 
 import type { GetUserId } from '../../auth/ports/get-user-id'
 import type { AccountRepository } from '../ports/account-repository'
@@ -33,112 +32,6 @@ export type SettingsDeps = {
 	createAccountRepository: (db: D1Database) => AccountRepository
 	getUserId: GetUserId
 }
-
-const unauthorizedResponseSchema = resolver(UnauthorizedResponseSchema)
-const notFoundResponseSchema = resolver(SettingsProfileNotFoundResponseSchema)
-const validationResponseSchema = resolver(ValidationErrorResponseSchema)
-
-const describeSettingsTokenRoute = describeRoute({
-	summary: 'Get current API token',
-	tags: ['Settings'],
-	security: [{ cookieAuth: [] }],
-	responses: {
-		[HTTP_OK]: {
-			description: 'API token for the current user',
-			content: {
-				'application/json': {
-					schema: resolver(SettingsTokenResponseSchema),
-				},
-			},
-		},
-		[HTTP_UNAUTHORIZED]: {
-			description: 'Missing session',
-			content: {
-				'application/json': { schema: unauthorizedResponseSchema },
-			},
-		},
-	},
-})
-
-const describeGetProfileRoute = describeRoute({
-	summary: 'Get the current user profile',
-	tags: ['Settings'],
-	security: [{ cookieAuth: [] }],
-	responses: {
-		[HTTP_OK]: {
-			description: 'User profile',
-			content: {
-				'application/json': {
-					schema: resolver(SettingsProfileResponseSchema),
-				},
-			},
-		},
-		[HTTP_NOT_FOUND]: {
-			description: 'No profile for the current user',
-			content: { 'application/json': { schema: notFoundResponseSchema } },
-		},
-		[HTTP_UNAUTHORIZED]: {
-			description: 'Missing session',
-			content: {
-				'application/json': { schema: unauthorizedResponseSchema },
-			},
-		},
-	},
-})
-
-const describeUpdateProfileRoute = describeRoute({
-	summary: 'Update the current user profile',
-	tags: ['Settings'],
-	security: [{ cookieAuth: [] }],
-	responses: {
-		[HTTP_OK]: {
-			description: 'Updated user profile',
-			content: {
-				'application/json': {
-					schema: resolver(SettingsProfileResponseSchema),
-				},
-			},
-		},
-		[HTTP_BAD_REQUEST]: {
-			description: 'Invalid body',
-			content: {
-				'application/json': { schema: validationResponseSchema },
-			},
-		},
-		[HTTP_NOT_FOUND]: {
-			description: 'No profile for the current user',
-			content: { 'application/json': { schema: notFoundResponseSchema } },
-		},
-		[HTTP_UNAUTHORIZED]: {
-			description: 'Missing session',
-			content: {
-				'application/json': { schema: unauthorizedResponseSchema },
-			},
-		},
-	},
-})
-
-const describeDeleteAccountRoute = describeRoute({
-	summary: 'Delete the current user account and all related data',
-	tags: ['Settings'],
-	security: [{ cookieAuth: [] }],
-	responses: {
-		[HTTP_OK]: {
-			description: 'Account deleted',
-			content: {
-				'application/json': {
-					schema: resolver(SettingsAccountDeletedResponseSchema),
-				},
-			},
-		},
-		[HTTP_UNAUTHORIZED]: {
-			description: 'Missing session',
-			content: {
-				'application/json': { schema: unauthorizedResponseSchema },
-			},
-		},
-	},
-})
 
 const validateSettingsProfileBody = validator(
 	'json',
