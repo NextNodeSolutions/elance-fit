@@ -1,26 +1,27 @@
 import {
-	HTTP_BAD_REQUEST,
 	HTTP_NOT_FOUND,
 	HTTP_OK,
-	HTTP_UNAUTHORIZED,
 	SETTINGS_PROFILE_NOT_FOUND_MESSAGE,
-	SETTINGS_UNAUTHORIZED_MESSAGE,
-	SettingsAccountDeletedResponseSchema,
 	SettingsProfileBodySchema,
-	SettingsProfileNotFoundResponseSchema,
-	SettingsProfileResponseSchema,
-	SettingsTokenResponseSchema,
-	SettingsUnauthorizedResponseSchema,
-	SettingsValidationErrorResponseSchema,
 } from '@elance/contracts'
 import { Hono } from 'hono'
-import { describeRoute, resolver, validator } from 'hono-openapi'
+import { validator } from 'hono-openapi'
 
+import { requireUserId } from '../../auth/http/require-user-id'
+import { rejectInvalidInput } from '../../http/reject-invalid-input'
 import { deleteAccount } from '../application/delete-account'
 import { getApiToken } from '../application/get-api-token'
 import { getSettingsProfile } from '../application/get-settings-profile'
 import { updateSettingsProfile } from '../application/update-settings-profile'
 
+import {
+	describeSettingsTokenRoute,
+	describeGetProfileRoute,
+	describeUpdateProfileRoute,
+	describeDeleteAccountRoute,
+} from './settings-route-descriptions'
+
+import type { GetUserId } from '../../auth/ports/get-user-id'
 import type { AccountRepository } from '../ports/account-repository'
 import type { ApiTokenRepository } from '../ports/api-token-repository'
 import type { SettingsProfileRepository } from '../ports/settings-profile-repository'
@@ -29,125 +30,13 @@ export type SettingsDeps = {
 	createRepository: (db: D1Database) => ApiTokenRepository
 	createProfileRepository: (db: D1Database) => SettingsProfileRepository
 	createAccountRepository: (db: D1Database) => AccountRepository
-	getUserId: (env: Env, headers: Headers) => Promise<string | null>
+	getUserId: GetUserId
 }
-
-const unauthorizedResponseSchema = resolver(SettingsUnauthorizedResponseSchema)
-const notFoundResponseSchema = resolver(SettingsProfileNotFoundResponseSchema)
-const validationResponseSchema = resolver(SettingsValidationErrorResponseSchema)
-
-const describeSettingsTokenRoute = describeRoute({
-	summary: 'Get current API token',
-	tags: ['Settings'],
-	security: [{ cookieAuth: [] }],
-	responses: {
-		[HTTP_OK]: {
-			description: 'API token for the current user',
-			content: {
-				'application/json': {
-					schema: resolver(SettingsTokenResponseSchema),
-				},
-			},
-		},
-		[HTTP_UNAUTHORIZED]: {
-			description: 'Missing session',
-			content: {
-				'application/json': { schema: unauthorizedResponseSchema },
-			},
-		},
-	},
-})
-
-const describeGetProfileRoute = describeRoute({
-	summary: 'Get the current user profile',
-	tags: ['Settings'],
-	security: [{ cookieAuth: [] }],
-	responses: {
-		[HTTP_OK]: {
-			description: 'User profile',
-			content: {
-				'application/json': {
-					schema: resolver(SettingsProfileResponseSchema),
-				},
-			},
-		},
-		[HTTP_NOT_FOUND]: {
-			description: 'No profile for the current user',
-			content: { 'application/json': { schema: notFoundResponseSchema } },
-		},
-		[HTTP_UNAUTHORIZED]: {
-			description: 'Missing session',
-			content: {
-				'application/json': { schema: unauthorizedResponseSchema },
-			},
-		},
-	},
-})
-
-const describeUpdateProfileRoute = describeRoute({
-	summary: 'Update the current user profile',
-	tags: ['Settings'],
-	security: [{ cookieAuth: [] }],
-	responses: {
-		[HTTP_OK]: {
-			description: 'Updated user profile',
-			content: {
-				'application/json': {
-					schema: resolver(SettingsProfileResponseSchema),
-				},
-			},
-		},
-		[HTTP_BAD_REQUEST]: {
-			description: 'Invalid body',
-			content: {
-				'application/json': { schema: validationResponseSchema },
-			},
-		},
-		[HTTP_NOT_FOUND]: {
-			description: 'No profile for the current user',
-			content: { 'application/json': { schema: notFoundResponseSchema } },
-		},
-		[HTTP_UNAUTHORIZED]: {
-			description: 'Missing session',
-			content: {
-				'application/json': { schema: unauthorizedResponseSchema },
-			},
-		},
-	},
-})
-
-const describeDeleteAccountRoute = describeRoute({
-	summary: 'Delete the current user account and all related data',
-	tags: ['Settings'],
-	security: [{ cookieAuth: [] }],
-	responses: {
-		[HTTP_OK]: {
-			description: 'Account deleted',
-			content: {
-				'application/json': {
-					schema: resolver(SettingsAccountDeletedResponseSchema),
-				},
-			},
-		},
-		[HTTP_UNAUTHORIZED]: {
-			description: 'Missing session',
-			content: {
-				'application/json': { schema: unauthorizedResponseSchema },
-			},
-		},
-	},
-})
 
 const validateSettingsProfileBody = validator(
 	'json',
 	SettingsProfileBodySchema,
-	(parseResult, res) => {
-		if (parseResult.success) return
-		return res.json(
-			{ errors: parseResult.error.map(issue => issue.message) },
-			HTTP_BAD_REQUEST,
-		)
-	},
+	rejectInvalidInput,
 )
 
 export function createSettingsRoutes(
@@ -165,46 +54,44 @@ function registerSettingsTokenRoute(
 	routes: Hono<{ Bindings: Env }>,
 	deps: SettingsDeps,
 ): void {
-	routes.get('/token', describeSettingsTokenRoute, async res => {
-		const userId = await deps.getUserId(res.env, res.req.raw.headers)
-		if (!userId) {
-			return res.json(
-				{ error: SETTINGS_UNAUTHORIZED_MESSAGE },
-				HTTP_UNAUTHORIZED,
+	routes.get(
+		'/token',
+		describeSettingsTokenRoute,
+		requireUserId(deps.getUserId),
+		async res => {
+			const userId = res.get('userId')
+			const token = await getApiToken(
+				deps.createRepository(res.env.DB),
+				userId,
 			)
-		}
-		const token = await getApiToken(
-			deps.createRepository(res.env.DB),
-			userId,
-		)
-		return res.json({ token }, HTTP_OK)
-	})
+			return res.json({ token }, HTTP_OK)
+		},
+	)
 }
 
 function registerGetProfileRoute(
 	routes: Hono<{ Bindings: Env }>,
 	deps: SettingsDeps,
 ): void {
-	routes.get('/profile', describeGetProfileRoute, async res => {
-		const userId = await deps.getUserId(res.env, res.req.raw.headers)
-		if (!userId) {
-			return res.json(
-				{ error: SETTINGS_UNAUTHORIZED_MESSAGE },
-				HTTP_UNAUTHORIZED,
+	routes.get(
+		'/profile',
+		describeGetProfileRoute,
+		requireUserId(deps.getUserId),
+		async res => {
+			const userId = res.get('userId')
+			const profile = await getSettingsProfile(
+				deps.createProfileRepository(res.env.DB),
+				userId,
 			)
-		}
-		const profile = await getSettingsProfile(
-			deps.createProfileRepository(res.env.DB),
-			userId,
-		)
-		if (!profile) {
-			return res.json(
-				{ error: SETTINGS_PROFILE_NOT_FOUND_MESSAGE },
-				HTTP_NOT_FOUND,
-			)
-		}
-		return res.json({ profile }, HTTP_OK)
-	})
+			if (!profile) {
+				return res.json(
+					{ error: SETTINGS_PROFILE_NOT_FOUND_MESSAGE },
+					HTTP_NOT_FOUND,
+				)
+			}
+			return res.json({ profile }, HTTP_OK)
+		},
+	)
 }
 
 function registerUpdateProfileRoute(
@@ -215,14 +102,9 @@ function registerUpdateProfileRoute(
 		'/profile',
 		describeUpdateProfileRoute,
 		validateSettingsProfileBody,
+		requireUserId(deps.getUserId),
 		async res => {
-			const userId = await deps.getUserId(res.env, res.req.raw.headers)
-			if (!userId) {
-				return res.json(
-					{ error: SETTINGS_UNAUTHORIZED_MESSAGE },
-					HTTP_UNAUTHORIZED,
-				)
-			}
+			const userId = res.get('userId')
 			const patch = res.req.valid('json')
 			const profile = await updateSettingsProfile(
 				deps.createProfileRepository(res.env.DB),
@@ -244,15 +126,17 @@ function registerDeleteAccountRoute(
 	routes: Hono<{ Bindings: Env }>,
 	deps: SettingsDeps,
 ): void {
-	routes.delete('/account', describeDeleteAccountRoute, async res => {
-		const userId = await deps.getUserId(res.env, res.req.raw.headers)
-		if (!userId) {
-			return res.json(
-				{ error: SETTINGS_UNAUTHORIZED_MESSAGE },
-				HTTP_UNAUTHORIZED,
+	routes.delete(
+		'/account',
+		describeDeleteAccountRoute,
+		requireUserId(deps.getUserId),
+		async res => {
+			const userId = res.get('userId')
+			await deleteAccount(
+				deps.createAccountRepository(res.env.DB),
+				userId,
 			)
-		}
-		await deleteAccount(deps.createAccountRepository(res.env.DB), userId)
-		return res.json({ ok: true }, HTTP_OK)
-	})
+			return res.json({ ok: true }, HTTP_OK)
+		},
+	)
 }
