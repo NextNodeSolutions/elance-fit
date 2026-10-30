@@ -2,8 +2,7 @@ import { UnauthorizedError } from '@elance/contracts'
 import { createMiddleware } from 'hono/factory'
 
 import type { MiddlewareHandler } from 'hono'
-
-export type GetUserId = (env: Env, headers: Headers) => Promise<string | null>
+import type { GetUserId } from '../ports/get-user-id'
 
 export type AuthenticatedEnv = {
 	Bindings: Env

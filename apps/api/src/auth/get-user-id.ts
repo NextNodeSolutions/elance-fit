@@ -1,9 +1,8 @@
 import { getAuthSession } from './get-auth-session'
 
-export async function getUserId(
-	env: Env,
-	headers: Headers,
-): Promise<string | null> {
+import type { GetUserId } from './ports/get-user-id'
+
+export const getUserId: GetUserId = async (env, headers) => {
 	const authSession = await getAuthSession(env, headers)
 	return authSession?.user.id ?? null
 }

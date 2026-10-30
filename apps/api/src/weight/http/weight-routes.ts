@@ -22,7 +22,7 @@ import { listWeightEntries } from '../application/list-weight-entries'
 import { getPeriodStartDate } from '../application/period-start-date'
 import { saveWeightEntry } from '../application/save-weight-entry'
 
-import type { GetUserId } from '../../auth/http/require-user-id'
+import type { GetUserId } from '../../auth/ports/get-user-id'
 import type { WeightRepository } from '../ports/weight-repository'
 
 export type WeightDeps = {

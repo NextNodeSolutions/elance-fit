@@ -22,7 +22,7 @@ import { getApiToken } from '../application/get-api-token'
 import { getSettingsProfile } from '../application/get-settings-profile'
 import { updateSettingsProfile } from '../application/update-settings-profile'
 
-import type { GetUserId } from '../../auth/http/require-user-id'
+import type { GetUserId } from '../../auth/ports/get-user-id'
 import type { AccountRepository } from '../ports/account-repository'
 import type { ApiTokenRepository } from '../ports/api-token-repository'
 import type { SettingsProfileRepository } from '../ports/settings-profile-repository'

@@ -18,7 +18,7 @@ import { rejectInvalidInput } from '../../http/reject-invalid-input'
 import { createProfile } from '../application/create-profile'
 import { getProfile } from '../application/get-profile'
 
-import type { GetUserId } from '../../auth/http/require-user-id'
+import type { GetUserId } from '../../auth/ports/get-user-id'
 import type { ProfileRepository } from '../ports/profile-repository'
 
 type OnboardingRoutes = Hono<{ Bindings: Env }>
