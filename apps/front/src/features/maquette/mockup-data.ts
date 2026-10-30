@@ -1,8 +1,4 @@
-import {
-	calorieStatus,
-	computeDailyCalorieTarget,
-	computeMacroTargets,
-} from '@elance/contracts'
+import { calorieStatus, computeDailyCalorieTarget } from '@elance/contracts'
 
 // Synthetic persona "Camille" for the /maquette design artifact.
 // Every figure below is derived from the profile with the real rules from
@@ -21,6 +17,7 @@ export const MOCKUP_PROFILE = {
 	age: 30,
 	sex: 'female',
 	activityLevel: 'moderate',
+	units: 'metric',
 } as const
 
 export const MOCKUP_TARGET_KCAL = computeDailyCalorieTarget(
@@ -30,11 +27,6 @@ export const MOCKUP_TARGET_KCAL = computeDailyCalorieTarget(
 		sex: MOCKUP_PROFILE.sex,
 		activityLevel: MOCKUP_PROFILE.activityLevel,
 	},
-	MOCKUP_PROFILE.weightKg,
-)
-
-export const MOCKUP_MACRO_TARGETS = computeMacroTargets(
-	MOCKUP_TARGET_KCAL,
 	MOCKUP_PROFILE.weightKg,
 )
 

@@ -9,11 +9,12 @@ import { Button, Input, Label } from '@elance/ui'
 import Wordmark from '../../components/brand/Wordmark.astro'
 
 import MockupRadioRow from './MockupRadioRow.astro'
+import { MOCKUP_PROFILE } from './mockup-data'
 
 const FIELD_VALUES: Record<string, string> = {
-  height: '170',
-  weight: '70',
-  age: '30',
+	height: String(MOCKUP_PROFILE.height),
+	weight: String(MOCKUP_PROFILE.weightKg),
+	age: String(MOCKUP_PROFILE.age),
 }
 ---
 
@@ -58,7 +59,7 @@ const FIELD_VALUES: Record<string, string> = {
 					SEX_OPTIONS.map(option => (
 						<MockupRadioRow
 							label={option.label}
-							checked={option.value === 'female'}
+							checked={option.value === MOCKUP_PROFILE.sex}
 						/>
 					))
 				}
@@ -72,7 +73,7 @@ const FIELD_VALUES: Record<string, string> = {
 						<MockupRadioRow
 							label={option.label}
 							hint={option.hint}
-							checked={option.value === 'moderate'}
+							checked={option.value === MOCKUP_PROFILE.activityLevel}
 							compact
 						/>
 					))

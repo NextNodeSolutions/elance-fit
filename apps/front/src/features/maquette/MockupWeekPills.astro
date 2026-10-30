@@ -6,9 +6,9 @@ import { WEEKDAY_LETTERS } from '../../lib/weekday-letters'
 import type { MockupWeekDay } from './mockup-data'
 
 interface Props {
-  days: readonly MockupWeekDay[]
-  todayIndex: number
-  targetKcal: number
+	days: readonly MockupWeekDay[]
+	todayIndex: number
+	targetKcal: number
 }
 
 const PERCENT = 100
@@ -19,7 +19,6 @@ const { days, todayIndex, targetKcal } = Astro.props
 	<ol class="grid grid-cols-7 gap-1.5">
 		{
 			days.map((day, index) => {
-				const letter = WEEKDAY_LETTERS[index] ?? ''
 				const isToday = index === todayIndex
 				const isFuture = day.future === true
 				const fillTone =
@@ -30,48 +29,39 @@ const { days, todayIndex, targetKcal } = Astro.props
 						: 'bg-transparent'
 				return (
 					<li>
-						{
-							isFuture ? (
-								<span class="flex flex-col items-center gap-1.5 rounded-2xl border border-dashed border-border py-2.5 text-muted-foreground">
-									<span class="text-xs">{letter}</span>
-									<span class="text-base tabular-nums">{day.dayOfMonth}</span>
-									<span class="relative h-1 w-6 overflow-hidden rounded-full bg-secondary"></span>
-								</span>
-							) : (
+						<span
+							class:list={[
+								'flex flex-col items-center gap-1.5 rounded-2xl py-2.5',
+								isFuture &&
+									'text-muted-foreground border border-dashed border-border',
+								isToday && 'bg-foreground text-background',
+								!isFuture && !isToday && 'bg-card text-muted-foreground',
+							]}
+						>
+							<span class="text-xs">{WEEKDAY_LETTERS[index] ?? ''}</span>
+							<span
+								class:list={[
+									'text-base tabular-nums',
+									isToday && 'font-semibold',
+								]}
+							>
+								{day.dayOfMonth}
+							</span>
+							<span
+								class:list={[
+									'relative h-1 w-6 overflow-hidden rounded-full',
+									isToday ? 'bg-white/15' : 'bg-secondary',
+								]}
+							>
 								<span
 									class:list={[
-										'flex flex-col items-center gap-1.5 rounded-2xl py-2.5',
-										isToday
-											? 'bg-foreground text-background'
-											: 'bg-card text-muted-foreground',
+										'absolute inset-y-0 left-0 rounded-full',
+										fillTone,
 									]}
-								>
-									<span class="text-xs">{letter}</span>
-									<span
-										class:list={[
-											'text-base tabular-nums',
-											isToday && 'font-semibold',
-										]}
-									>
-										{day.dayOfMonth}
-									</span>
-									<span
-										class:list={[
-											'relative h-1 w-6 overflow-hidden rounded-full',
-											isToday ? 'bg-white/15' : 'bg-secondary',
-										]}
-									>
-										<span
-											class:list={[
-												'absolute inset-y-0 left-0 rounded-full',
-												fillTone,
-											]}
-											style={`width: ${Math.min(1, day.kcal / targetKcal) * PERCENT}%`}
-										></span>
-									</span>
-								</span>
-							)
-						}
+									style={`width: ${Math.min(1, day.kcal / targetKcal) * PERCENT}%`}
+								></span>
+							</span>
+						</span>
 					</li>
 				)
 			})
