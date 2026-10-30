@@ -4,21 +4,29 @@ import { LoaderCircle } from 'lucide-react'
 
 import { Button } from './button'
 
-/** Submit button that disables itself and shows a spinner with `pendingLabel` while `pending`. */
 function SubmitButton({
 	pending,
 	pendingLabel,
+	disabled,
 	children,
 	...props
-}: Omit<React.ComponentProps<typeof Button>, 'type' | 'disabled'> & {
+}: Omit<React.ComponentProps<typeof Button>, 'type'> & {
 	pending: boolean
 	pendingLabel: React.ReactNode
 }): React.ReactElement {
 	return (
-		<Button type="submit" disabled={pending} {...props}>
+		<Button
+			{...props}
+			type="submit"
+			disabled={pending || disabled}
+			aria-busy={pending || undefined}
+		>
 			{pending ? (
 				<>
-					<LoaderCircle className="animate-spin" />
+					<LoaderCircle
+						aria-hidden="true"
+						className="animate-spin motion-reduce:animate-none"
+					/>
 					{pendingLabel}
 				</>
 			) : (
