@@ -1,0 +1,111 @@
+---
+import { WEIGHT_PERIOD_OPTIONS } from '@elance/contracts'
+import {
+  badgeVariants,
+  Button,
+  cardDescriptionVariants,
+  cardTitleVariants,
+  Input,
+  Label,
+  segmentedControlItemVariants,
+  segmentedControlVariants,
+} from '@elance/ui'
+
+import { buildWeightTrend } from '../weight/build-weight-trend'
+import { formatEntryDate } from '../weight/format-entry-date'
+import { formatWeight } from '../weight/format-weight'
+import { formatWeightDelta } from '../weight/format-weight-delta'
+
+import MockupHeader from './MockupHeader.astro'
+import { MOCKUP_WEIGH_INS } from './mockup-data'
+
+const [latest] = MOCKUP_WEIGH_INS
+const trend = buildWeightTrend(MOCKUP_WEIGH_INS)
+const ACTIVE_PERIOD = '30d'
+---
+
+<MockupHeader />
+<h1 class="pt-1 text-[1.6rem] leading-tight font-medium tracking-[-0.04em]">
+	Poids
+</h1>
+<p class="mt-1 text-sm text-muted-foreground">
+	Note tes pesées et suis ta tendance.
+</p>
+<nav
+	aria-label="Période affichée"
+	class:list={[segmentedControlVariants(), 'mt-3 w-full']}
+>
+	{
+		WEIGHT_PERIOD_OPTIONS.map(option => (
+			<a
+				href="#"
+				aria-current={option.value === ACTIVE_PERIOD ? 'page' : undefined}
+				class={segmentedControlItemVariants()}
+			>
+				{option.label}
+			</a>
+		))
+	}
+</nav>
+{
+	trend ? (
+		<div class="mt-3 rounded-2xl bg-card p-3.5">
+			<h2 class={cardTitleVariants()}>Tendance</h2>
+			<p class="mt-3 text-4xl font-medium tracking-[-0.045em] tabular-nums">
+				{formatWeight(latest.weight, 'kg')}
+			</p>
+			<p class="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+				<span class={badgeVariants()}>
+					{formatWeightDelta(trend.delta, 'kg')}
+				</span>
+				depuis le {formatEntryDate(trend.start.entryDate, 'long')}
+			</p>
+			<svg
+				viewBox="0 0 100 100"
+				preserveAspectRatio="none"
+				class="mt-4 block h-28 w-full overflow-visible"
+				role="img"
+				aria-label={`Évolution du poids sur 30 jours, ${formatWeightDelta(trend.delta, 'kg')}`}
+			>
+				<path d={trend.areaPath} class="fill-brand/15"></path>
+				<path
+					d={trend.linePath}
+					fill="none"
+					class="stroke-brand-ink"
+					stroke-width="2"
+					stroke-linejoin="round"
+					stroke-linecap="round"
+					vector-effect="non-scaling-stroke"
+				></path>
+			</svg>
+		</div>
+	) : null
+}
+<div class="mt-3 rounded-2xl bg-card p-3.5">
+	<h2 class={cardTitleVariants()}>Historique</h2>
+	<p class:list={[cardDescriptionVariants(), 'mt-1']}>Tes dernières pesées</p>
+	<ul class="mt-3 divide-y divide-secondary">
+		{
+			MOCKUP_WEIGH_INS.map(entry => (
+				<li class="flex min-h-12 items-center justify-between gap-4 py-3 text-[15px]">
+					<span class="text-muted-foreground">
+						{formatEntryDate(entry.entryDate, 'long')}
+					</span>
+					<span class="font-medium whitespace-nowrap tabular-nums">
+						{formatWeight(entry.weight, 'kg')}
+					</span>
+				</li>
+			))
+		}
+	</ul>
+</div>
+<div class="mt-3 rounded-2xl bg-card p-3.5">
+	<h2 class={cardTitleVariants()}>Nouvelle pesée</h2>
+	<div class="mt-3 space-y-3">
+		<div class="space-y-2">
+			<Label htmlFor="mockup-weight-input">Poids (kg)</Label>
+			<Input id="mockup-weight-input" type="number" step="0.1" defaultValue="69.4" />
+		</div>
+		<Button className="w-full">Enregistrer la pesée</Button>
+	</div>
+</div>

@@ -7,12 +7,29 @@ import react from '@astrojs/react'
 import sentry from '@sentry/astro'
 import tailwindcss from '@tailwindcss/vite'
 
+// The mobile mockup board is a design artifact, not a product page: it is only
+// injected as a route during local development, so the production build never
+// emits it (no /maquette route, nothing to expose).
+/** @type {import('astro').AstroIntegration} */
+const devOnlyMockupBoard = {
+	name: 'dev-only-mockup-board',
+	hooks: {
+		'astro:config:setup': ({ command, injectRoute }) => {
+			if (command !== 'dev') return
+			injectRoute({
+				pattern: '/maquette',
+				entrypoint: './src/features/maquette/maquette-page.astro',
+			})
+		},
+	},
+}
+
 export default defineConfig({
 	output: 'server',
 	adapter: cloudflare({
 		configPath: 'wrangler.dev.jsonc',
 	}),
-	integrations: [react(), sentry()],
+	integrations: [react(), sentry(), devOnlyMockupBoard],
 	vite: {
 		plugins: [tailwindcss()],
 		ssr: {
