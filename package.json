@@ -7,7 +7,9 @@
     "format:check": "oxfmt --check .",
     "lint": "turbo run lint",
     "prepare": "node .husky/install.mjs",
-    "test": "turbo run test",
+    "test": "pnpm run test:unit && pnpm run test:integration",
+    "test:integration": "turbo run test:integration",
+    "test:unit": "turbo run test:unit",
     "type-check": "turbo run type-check",
     "types:gen": "worker-types gen --config nextnode.toml"
   },

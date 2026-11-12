@@ -5,7 +5,7 @@
     "build": "esbuild src/worker.ts --bundle --format=esm --platform=neutral --main-fields=module,main --external:node:* --external:cloudflare:* --outfile=dist/worker.mjs",
     "lint": "oxlint",
     "start": "tsx src/index.ts",
-    "test": "vitest run",
+    "test:unit": "vitest run",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {

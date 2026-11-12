@@ -17,7 +17,7 @@ Front de elance.fit : Astro 7 + React (îlots), déployé en Worker Cloudflare v
 pnpm --filter @elance/front dev         # astro dev
 pnpm --filter @elance/front build       # build de production
 pnpm --filter @elance/front type-check  # astro check
-pnpm --filter @elance/front test        # vitest
+pnpm --filter @elance/front test:unit   # vitest
 ```
 
 Les types Worker (`worker-configuration.d.ts`) sont générés depuis la racine :
