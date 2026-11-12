@@ -6,7 +6,7 @@
     "build": "astro build",
     "dev": "astro dev",
     "lint": "oxlint",
-    "test": "vitest run",
+    "test:unit": "vitest run",
     "type-check": "astro check",
     "preview": "astro preview"
   },

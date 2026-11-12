@@ -7,7 +7,8 @@
     "db:generate": "drizzle-kit generate",
     "dev": "wrangler dev --config wrangler.dev.jsonc",
     "lint": "oxlint",
-    "test": "vitest run",
+    "test:integration": "vitest run src/index.test.ts src/ingest/http src/settings/http",
+    "test:unit": "vitest run --exclude src/index.test.ts --exclude 'src/**/http/**'",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {

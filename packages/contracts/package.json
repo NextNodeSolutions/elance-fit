@@ -4,7 +4,7 @@
   "main": "src/index.ts",
   "scripts": {
     "lint": "oxlint",
-    "test": "vitest run",
+    "test:unit": "vitest run",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
